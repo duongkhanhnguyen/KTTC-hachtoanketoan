@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phần Mềm Mô Phỏng Hạch Toán Kế Toán - Đa Bút Toán</title>
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-blue: #3b82f6;
+            --light-blue: #eff6ff;
+            --warning-yellow: #f59e0b;
+            --light-yellow: #fffbeb;
+            --danger-red: #ef4444;
+            --light-red: #fef2f2;
+            --success-green: #10b981;
+            --dark-gray: #1f2937;
+            --bg-gray: #f3f4f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--dark-gray);
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid var(--warning-yellow);
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .badge-demo {
+            background-color: var(--warning-yellow);
+            color: var(--dark-gray);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .btn-print-header {
+            background-color: var(--success-green);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .btn-print-header:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .summary-box {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-card.blue { background-color: var(--light-blue); color: var(--primary-blue); }
+        .stat-card.yellow { background-color: var(--light-yellow); color: #b45309; }
+        .stat-card.red { background-color: var(--light-red); color: var(--danger-red); }
+
+        .stat-card .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1.2fr 1.8fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border-top: 4px solid var(--accent-blue);
+        }
+
+        .card.card-warning { border-top-color: var(--warning-yellow); }
+        .card.card-danger { border-top-color: var(--danger-red); }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .entry-section {
+            background-color: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 12px;
+        }
+
+        .entry-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .entry-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .entry-row select { flex: 2; }
+        .entry-row input { flex: 1.5; }
+
+        .btn-icon {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-add {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-primary { background-color: var(--accent-blue); color: white; }
+        .btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .btn-warning { background-color: var(--warning-yellow); color: var(--dark-gray); }
+        .btn-danger { background-color: var(--danger-red); color: white; }
+        .btn-success { background-color: var(--success-green); color: white; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th { background-color: var(--light-blue); color: var(--primary-blue); }
+        tr:nth-child(even) { background-color: #f9fafb; }
+
+        .row-total {
+            background-color: #eef2ff !important;
+            font-weight: bold;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .badge-debit { color: var(--accent-blue); font-weight: bold; }
+        .badge-credit { color: var(--danger-red); font-weight: bold; }
+
+        .validation-msg {
+            font-size: 0.85rem;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .msg-error { background-color: var(--light-red); color: var(--danger-red); }
+        .msg-success { background-color: #d1fae5; color: var(--success-green); }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-top: 5px solid var(--success-green);
+        }
+
+        .modal-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        /* Khối hiển thị thông tin sinh viên khi in */
+        .print-student-info {
+            display: none;
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border: 1px solid #000;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        .print-student-info h3 {
+            margin-bottom: 6px;
+            font-size: 1.15rem;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .print-student-info p {
+            font-size: 0.95rem;
+            margin-top: 3px;
+        }
+
+        /* Khối Chữ ký khi in */
+        .print-signature-box {
+            display: none;
+            margin-top: 25px;
+            width: 100%;
+        }
+
+        .signature-grid {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+        }
+
+        .signature-col {
+            flex: 1;
+        }
+
+        .signature-col .title {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .signature-col .subtitle {
+            font-style: italic;
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        /* ==========================================
+           CẤU HÌNH TRANG IN A4 NGANG (LANDSCAPE)
+        ========================================== */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding: 0 !important;
+                font-size: 11pt;
+            }
+
+            /* Đã sửa: Ẩn đúng cột hành động (.col-action) thay vì th:last-child, td:last-child */
+            header, .summary-box, .grid-container > div:first-child, .modal-overlay, .btn-icon, .btn-add, .btn-group, .col-action {
+                display: none !important;
+            }
+
+            .grid-container {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .card {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin-bottom: 20px !important;
+                width: 100% !important;
+            }
+
+            .card-title {
+                font-size: 1.1rem !important;
+                color: black !important;
+                margin-bottom: 8px !important;
+            }
+
+            .print-student-info, .print-signature-box {
+                display: block !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                table-layout: auto !important;
+            }
+
+            th, td {
+                border: 1px solid #000 !important;
+                color: black !important;
+                padding: 6px 8px !important;
+                word-wrap: break-word;
+            }
+
+            th {
+                background-color: #f2f2f2 !important;
+                font-weight: bold !important;
+            }
+
+            .row-total {
+                background-color: #f9f9f9 !important;
+            }
+
+            .badge-debit, .badge-credit {
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Mô Phỏng Hạch Toán Kế Toán (Đa Bút Toán)</h1>
+        <div class="header-right">
+            <button type="button" class="btn-print-header" onclick="openPrintModal()">🖨️ In Báo Cáo</button>
+            <span class="badge-demo">Phiên Bản Giảng Dạy 高級</span>
+        </div>
+    </header>
+
+    <!-- Khối Thông Tin Sinh Viên Chỉ Hiện Khi In -->
+    <div id="printStudentInfo" class="print-student-info">
+        <h3>BÁO CÁO KẾT QUẢ THỰC HÀNH HẠCH TOÁN KẾ TOÁN</h3>
+        <p><strong>Họ và tên sinh viên:</strong> <span id="printStudentName"></span></p>
+        <p><strong>Mã số sinh viên:</strong> <span id="printStudentId"></span></p>
+    </div>
+
+    <!-- Bảng tổng quan thông số -->
+    <div class="summary-box">
+        <div class="stat-card blue">
+            <div>Tổng Phát Sinh Nợ</div>
+            <div class="value" id="totalDebit">0 VNĐ</div>
+        </div>
+        <div class="stat-card red">
+            <div>Tổng Phát Sinh Có</div>
+            <div class="value" id="totalCredit">0 VNĐ</div>
+        </div>
+        <div class="stat-card yellow">
+            <div>Cân Bằng Sổ Sách</div>
+            <div class="value" id="balanceStatus">Cân Bằng</div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <!-- Cột trái: Form nhập nhiều Nợ nhiều Có -->
+        <div>
+            <div class="card">
+                <div class="card-title">📝 Ghi Nhận Bút Toán</div>
+                <form id="entryForm">
+                    <div class="form-group">
+                        <label>Ngày hạch toán</label>
+                        <input type="date" id="entryDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Diễn giải chứng từ</label>
+                        <input type="text" id="description" class="form-control" placeholder="Ví dụ: Mua TSCĐ gồm thuế GTGT thanh toán Chuyển khoản" required>
+                    </div>
+
+                    <!-- Khối Nhiều Nợ -->
+                    <div class="entry-section">
+                        <div class="entry-section-header">
+                            <span style="color: var(--accent-blue);">➕ CÁC TÀI KHOẢN NỢ</span>
+                            <button type="button" class="btn-add" onclick="addDebitRow()">+ Thêm TK Nợ</button>
+                        </div>
+                        <div id="debitContainer"></div>
+                        <div class="text-right" style="font-size: 0.85rem; font-weight: bold; color: var(--accent-blue);">
+                            Tổng Nợ: <span id="subTotalDebit">0</span> VNĐ
+                        </div>
+                    </div>
+
+                    <!-- Khối Nhiều Có -->
+                    <div class="entry-section">
+                        <div class="entry-section-header">
+                            <span style="color: var(--danger-red);">➖ CÁC TÀI KHOẢN CÓ</span>
+                            <button type="button" class="btn-add" style="background-color: var(--danger-red);" onclick="addCreditRow()">+ Thêm TK Có</button>
+                        </div>
+                        <div id="creditContainer"></div>
+                        <div class="text-right" style="font-size: 0.85rem; font-weight: bold; color: var(--danger-red);">
+                            Tổng Có: <span id="subTotalCredit">0</span> VNĐ
+                        </div>
+                    </div>
+
+                    <!-- Cảnh báo Cân bằng Bút toán hiện tại -->
+                    <div id="validationMsg" class="validation-msg msg-error">
+                        Tổng Nợ và Tổng Có phải bằng nhau!
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" id="btnSubmit" class="btn btn-primary" disabled>Hạch Toán</button>
+                        <button type="button" id="btnSample" class="btn btn-warning">Mẫu Lớp Học</button>
+                        <button type="button" id="btnClear" class="btn btn-danger">Xóa Hết</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cột phải: Nhật ký chung & Sổ cái -->
+        <div>
+            <!-- Bảng Nhật ký chung -->
+            <div class="card card-warning">
+                <div class="card-title">📖 Sổ Nhật Ký Chung</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Diễn giải</th>
+                                <th class="text-center">TK Nợ</th>
+                                <th class="text-center">TK Có</th>
+                                <th class="text-right">Số tiền</th>
+                                <th class="text-center col-action">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journalTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bảng Sổ cái tổng hợp T-Account -->
+            <div class="card card-danger">
+                <div class="card-title">📊 Sổ Cái Tổng Hợp Các Tài Khoản</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã TK</th>
+                                <th>Tên Tài Khoản</th>
+                                <th class="text-right">Phát Sinh Nợ</th>
+                                <th class="text-right">Phát Sinh Có</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Khối Chữ ký Chuẩn Mẫu Sổ Kế Toán (Hiện khi in) -->
+            <div class="print-signature-box">
+                <div style="text-align: right; font-style: italic; margin-bottom: 10px;">
+                    Ngày ..... tháng ..... năm 20...
+                </div>
+                <div class="signature-grid">
+                    <div class="signature-col">
+                        <div class="title">Người Lập Biểu</div>
+                        <div class="subtitle">(Ký, họ tên)</div>
+                    </div>
+                    <div class="signature-col">
+                        <div class="title">Kế Toán Trưởng</div>
+                        <div class="subtitle">(Ký, họ tên)</div>
+                    </div>
+                    <div class="signature-col">
+                        <div class="title">Giám Đốc / Thủ Trưởng Đơn Vị</div>
+                        <div class="subtitle">(Ký, họ tên, đóng dấu)</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Thông tin In Sinh Viên -->
+    <div id="printModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>🖨️ Thông Tin In Báo Cáo</span>
+                <span class="modal-close" onclick="closePrintModal()">✕</span>
+            </div>
+            <form id="printForm" onsubmit="executePrint(event)">
+                <div class="form-group">
+                    <label>Họ và tên sinh viên</label>
+                    <input type="text" id="studentName" class="form-control" placeholder="Nhập họ và tên..." required>
+                </div>
+                <div class="form-group">
+                    <label>Mã số sinh viên (MSSV)</label>
+                    <input type="text" id="studentId" class="form-control" placeholder="Nhập mã số sinh viên..." required>
+                </div>
+                <div class="btn-group" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-success">Thực Hiện In File</button>
+                    <button type="button" class="btn btn-danger" onclick="closePrintModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const accountMap = {
+            '111': 'Tiền mặt tại quỹ', '112': 'Tiền gửi không kỳ hạn', '131': 'Phải thu khách hàng', '141': 'Tạm ứng nhân viên', '151': 'Hàng mua đang đi đường', '152': 'Nguyên liệu, vật liệu', '153': 'Công cụ, dụng cụ', '154': 'Chi phí sản xuất dở dang', '155': 'Sản phẩm', '156': 'Hàng hóa tồn kho', '157': 'Hàng gửi đi bán', '211': 'Tài sản cố định hữu hình', '212': 'Tài sản cố định thuê tài chính', '213': 'Tài sản cố định vô hình', '2141': 'Hao mòn TSCĐ hữu hình', '2142': 'Hao mòn TSCĐ thuê tài chính', '2143': 'Hao mòn TSCĐ vô hình', '2147': 'Hao mòn BĐS đầu tư', '215': 'Tài sản sinh học', '217': 'Bất động sản đầu tư', '221': 'Đầu tư vào công ty con', '222': 'Đầu tư vào công ty liên doanh, liên kết', '228': 'Đầu tư khác', '229': 'Dự phòng tổn thất tài sản', '241': 'Xây dựng cơ bản dở dang', '242': 'Chi phí chờ phân bổ', '243': 'Tài sản thuế thu nhập hoãn lại', '244': 'Ký quỹ, ký cược', '331': 'Phải trả người bán', '332': 'Phải trả cổ tức, lợi nhuận', '333': 'Thuế và các khoản phải nộp nhà nước', '335': 'Chi phí phải trả', '336': 'Phải trả nội bộ', '337': 'Thanh toán theo tiến độ hợp đồng xây dựng', '338': 'Phải trả, phải nộp khác', '341': 'Vay và nợ thuê tài chính', '343': 'Trái phiếu phát hành', '344': 'Nhận ký quỹ, ký cược', '347': 'Thuế thu nhập hoãn lại phải trả', '352': 'Dự phòng phải trả', '353': 'Quỹ khen thưởng phúc lợi', '356': 'Quỹ phát triển khoa học công nghệ', '357': 'Quỹ bình ổn giá', '334': 'Phải trả người lao động', '4111': 'Vốn đầu tư của chủ sở hữu', '412': 'Chênh lệch đánh giá lại tài sản', '413': 'Chênh lệch tỷ giá hối đoái', '414': 'Quỹ đầu tư phát triển', '418': 'Quỹ khác thuộc vốn chủ sở hữu', '419': 'Cổ phiếu mua lại của chính minh', '421': 'Lợi nhuận sau thuế chưa phân phối', '511': 'Doanh thu bán hàng & cung cấp dịch vụ', '515': 'Doanh thu hoạt động tài chính', '521': 'Các khoản giảm trừ doanh thu', '621': 'Chi phí nguyên vật liệu trực tiếp', '622': 'Chi phí nhân công trực tiếp', '623': 'Chi phí sử dụng máy thi công', '627': 'Chi phí sản xuất chung', '632': 'Giá vốn hàng bán', '635': 'Chi phí tài chính', '641': 'Chi phí bán hàng', '642': 'Chi phí quản lý doanh nghiệp', '711': 'Thu nhập khác', '811': 'Chi phí khác', '821': 'Chi phí thuế TNDN', '911': 'Xác định kết quả kinh doanh',
+            '1331': 'Thuế GTGT được khấu trừ của hàng hóa, dịch vụ', '1332': 'Thuế GTGT được khấu trừ của TSCĐ', '3331': 'Thuế GTGT phải nộp' 
+        };
+
+        let transactions = []; 
+
+        document.getElementById('entryDate').valueAsDate = new Date();
+
+        function getAccountOptions() {
+            let html = '<option value="">-- Chọn TK --</option>';
+            Object.keys(accountMap).forEach(acc => {
+                html += `<option value="${acc}">${acc} - ${accountMap[acc]}</option>`;
+            });
+            return html;
+        }
+
+        function addDebitRow(acc = '', amount = '') {
+            const container = document.getElementById('debitContainer');
+            const row = document.createElement('div');
+            row.className = 'entry-row debit-row';
+            row.innerHTML = `
+                <select class="form-control debit-acc" required onchange="calculateFormTotals()">${getAccountOptions()}</select>
+                <input type="number" class="form-control debit-amount" placeholder="Số tiền" min="1" value="${amount}" required oninput="calculateFormTotals()">
+                <button type="button" class="btn-icon" onclick="removeRow(this)">✕</button>
+            `;
+            container.appendChild(row);
+            if(acc) row.querySelector('.debit-acc').value = acc;
+            calculateFormTotals();
+        }
+
+        function addCreditRow(acc = '', amount = '') {
+            const container = document.getElementById('creditContainer');
+            const row = document.createElement('div');
+            row.className = 'entry-row credit-row';
+            row.innerHTML = `
+                <select class="form-control credit-acc" required onchange="calculateFormTotals()">${getAccountOptions()}</select>
+                <input type="number" class="form-control credit-amount" placeholder="Số tiền" min="1" value="${amount}" required oninput="calculateFormTotals()">
+                <button type="button" class="btn-icon" onclick="removeRow(this)">✕</button>
+            `;
+            container.appendChild(row);
+            if(acc) row.querySelector('.credit-acc').value = acc;
+            calculateFormTotals();
+        }
+
+        function removeRow(btn) {
+            btn.parentElement.remove();
+            calculateFormTotals();
+        }
+
+        function calculateFormTotals() {
+            let totalDebit = 0;
+            let totalCredit = 0;
+
+            document.querySelectorAll('.debit-amount').forEach(input => {
+                totalDebit += parseFloat(input.value) || 0;
+            });
+
+            document.querySelectorAll('.credit-amount').forEach(input => {
+                totalCredit += parseFloat(input.value) || 0;
+            });
+
+            document.getElementById('subTotalDebit').innerText = totalDebit.toLocaleString('vi-VN');
+            document.getElementById('subTotalCredit').innerText = totalCredit.toLocaleString('vi-VN');
+
+            const validationMsg = document.getElementById('validationMsg');
+            const btnSubmit = document.getElementById('btnSubmit');
+
+            const isBalanced = (totalDebit > 0) && (totalDebit === totalCredit);
+
+            if (isBalanced) {
+                validationMsg.className = "validation-msg msg-success";
+                validationMsg.innerText = "✓ Bút toán cân bằng! Có thể hạch toán.";
+                btnSubmit.disabled = false;
+            } else {
+                validationMsg.className = "validation-msg msg-error";
+                validationMsg.innerText = `⚠ Chưa cân bằng! Lệch: ${(totalDebit - totalCredit).toLocaleString('vi-VN')} VNĐ`;
+                btnSubmit.disabled = true;
+            }
+        }
+
+        document.getElementById('entryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const date = document.getElementById('entryDate').value;
+            const description = document.getElementById('description').value;
+
+            const debits = [];
+            document.querySelectorAll('.debit-row').forEach(row => {
+                debits.push({
+                    acc: row.querySelector('.debit-acc').value,
+                    amount: parseFloat(row.querySelector('.debit-amount').value)
+                });
+            });
+
+            const credits = [];
+            document.querySelectorAll('.credit-row').forEach(row => {
+                credits.push({
+                    acc: row.querySelector('.credit-acc').value,
+                    amount: parseFloat(row.querySelector('.credit-amount').value)
+                });
+            });
+
+            transactions.push({ id: Date.now(), date, description, debits, credits });
+            
+            document.getElementById('description').value = '';
+            resetFormInputs();
+            updateUI();
+        });
+
+        function resetFormInputs() {
+            document.getElementById('debitContainer').innerHTML = '';
+            document.getElementById('creditContainer').innerHTML = '';
+            addDebitRow();
+            addCreditRow();
+        }
+
+        function deleteTransaction(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            updateUI();
+        }
+
+        document.getElementById('btnSample').addEventListener('click', function() {
+            const today = new Date().toISOString().split('T')[0];
+            transactions = [
+                {
+                    id: 1,
+                    date: today,
+                    description: "Mua Máy móc cố định gồm Thuế GTGT 10% thanh toán bằng Chuyển khoản",
+                    debits: [
+                        { acc: "211", amount: 100000000 },
+                        { acc: "1331", amount: 10000000 }
+                    ],
+                    credits: [
+                        { acc: "112", amount: 110000000 }
+                    ]
+                },
+                {
+                    id: 2,
+                    date: today,
+                    description: "Bán hàng thu tiền mặt một phần, còn lại nợ, chịu thuế GTGT 10%",
+                    debits: [
+                        { acc: "111", amount: 30000000 },
+                        { acc: "131", amount: 25000000 }
+                    ],
+                    credits: [
+                        { acc: "511", amount: 50000000 },
+                        { acc: "3331", amount: 5000000 }
+                    ]
+                }
+            ];
+            updateUI();
+        });
+
+        document.getElementById('btnClear').addEventListener('click', function() {
+            if (confirm('Xóa toàn bộ sổ sách hiện tại?')) {
+                transactions = [];
+                updateUI();
+            }
+        });
+
+        function updateUI() {
+            renderJournal();
+            renderLedger();
+        }
+
+        function renderJournal() {
+            const tbody = document.getElementById('journalTableBody');
+            tbody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="color: #6b7280;">Chưa có bút toán nào.</td></tr>`;
+                return;
+            }
+
+            transactions.forEach(t => {
+                const rowSpan = Math.max(t.debits.length, t.credits.length);
+                
+                for (let i = 0; i < rowSpan; i++) {
+                    const tr = document.createElement('tr');
+                    
+                    if (i === 0) {
+                        tr.innerHTML += `<td rowspan="${rowSpan}">${t.date}</td>`;
+                        tr.innerHTML += `<td rowspan="${rowSpan}">${t.description}</td>`;
+                    }
+
+                    const debit = t.debits[i];
+                    if (debit) {
+                        tr.innerHTML += `<td class="text-center badge-debit">TK ${debit.acc}</td>`;
+                    } else {
+                        tr.innerHTML += `<td></td>`;
+                    }
+
+                    const credit = t.credits[i];
+                    if (credit) {
+                        tr.innerHTML += `<td class="text-center badge-credit">TK ${credit.acc}</td>`;
+                    } else {
+                        tr.innerHTML += `<td></td>`;
+                    }
+
+                    const amt = debit ? debit.amount : credit.amount;
+                    tr.innerHTML += `<td class="text-right">${amt.toLocaleString('vi-VN')}</td>`;
+
+                    if (i === 0) {
+                        tr.innerHTML += `<td rowspan="${rowSpan}" class="text-center col-action">
+                            <button class="btn-icon" onclick="deleteTransaction(${t.id})">✕</button>
+                        </td>`;
+                    }
+
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        // Render Sổ cái tổng hợp
+        function renderLedger() {
+            const tbody = document.getElementById('ledgerTableBody');
+            tbody.innerHTML = '';
+
+            const ledgerMap = {};
+            Object.keys(accountMap).forEach(acc => {
+                ledgerMap[acc] = { debit: 0, credit: 0 };
+            });
+
+            let grandTotalDebit = 0;
+            let grandTotalCredit = 0;
+
+            transactions.forEach(t => {
+                t.debits.forEach(d => {
+                    if (!ledgerMap[d.acc]) ledgerMap[d.acc] = { debit: 0, credit: 0 };
+                    ledgerMap[d.acc].debit += d.amount;
+                    grandTotalDebit += d.amount;
+                });
+                t.credits.forEach(c => {
+                    if (!ledgerMap[c.acc]) ledgerMap[c.acc] = { debit: 0, credit: 0 };
+                    ledgerMap[c.acc].credit += c.amount;
+                    grandTotalCredit += c.amount;
+                });
+            });
+
+            let hasData = false;
+            Object.keys(ledgerMap).forEach(acc => {
+                const { debit, credit } = ledgerMap[acc];
+                if (debit > 0 || credit > 0) {
+                    hasData = true;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: bold;">${acc}</td>
+                        <td>${accountMap[acc] || 'Tài khoản mở rộng'}</td>
+                        <td class="text-right badge-debit">${debit > 0 ? debit.toLocaleString('vi-VN') : '-'}</td>
+                        <td class="text-right badge-credit">${credit > 0 ? credit.toLocaleString('vi-VN') : '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (!hasData) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center" style="color: #6b7280;">Chưa có dữ liệu sổ cái.</td></tr>`;
+            } else {
+                // Thêm Dòng TỔNG PHÁT SINH chuẩn mẫu kế toán hiện hành
+                const totalTr = document.createElement('tr');
+                totalTr.className = 'row-total';
+                totalTr.innerHTML = `
+                    <td colspan="2" class="text-center">TỔNG PHÁT SINH</td>
+                    <td class="text-right badge-debit">${grandTotalDebit.toLocaleString('vi-VN')}</td>
+                    <td class="text-right badge-credit">${grandTotalCredit.toLocaleString('vi-VN')}</td>
+                `;
+                tbody.appendChild(totalTr);
+            }
+
+            // Update Top Cards
+            document.getElementById('totalDebit').innerText = grandTotalDebit.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('totalCredit').innerText = grandTotalCredit.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('balanceStatus').innerText = (grandTotalDebit === grandTotalCredit && grandTotalDebit > 0) ? "Cân Bằng" : "Chưa Khởi Tạo";
+        }
+
+        // --- CÁC HÀM XỬ LÝ NÚT IN VÀ MODAL ---
+        function openPrintModal() {
+            document.getElementById('printModal').style.display = 'flex';
+        }
+
+        function closePrintModal() {
+            document.getElementById('printModal').style.display = 'none';
+        }
+
+        function executePrint(e) {
+            e.preventDefault();
+            const name = document.getElementById('studentName').value;
+            const studentId = document.getElementById('studentId').value;
+
+            document.getElementById('printStudentName').innerText = name;
+            document.getElementById('printStudentId').innerText = studentId;
+
+            closePrintModal();
+
+            // Lệnh in trình duyệt A4 Ngang
+            window.print();
+        }
+
+        resetFormInputs();
+        updateUI();
+    </script>
+</body>
+</html>
