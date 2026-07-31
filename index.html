@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phần Mềm Mô Phỏng Hạch Toán Kế Toán - Đa Bút Toán</title>
+    <title>Phần Mềm Mô Phỏng Hạch Toán Kế Toán </title>
     <style>
         :root {
             --primary-blue: #1e3a8a;
@@ -375,7 +375,6 @@
                 font-size: 11pt;
             }
 
-            /* Đã sửa: Ẩn đúng cột hành động (.col-action) thay vì th:last-child, td:last-child */
             header, .summary-box, .grid-container > div:first-child, .modal-overlay, .btn-icon, .btn-add, .btn-group, .col-action {
                 display: none !important;
             }
@@ -434,10 +433,10 @@
 <body>
 
     <header>
-        <h1>Mô Phỏng Hạch Toán Kế Toán (Đa Bút Toán)</h1>
+        <h1>Mô Phỏng Hạch Toán Kế Toán </h1>
         <div class="header-right">
             <button type="button" class="btn-print-header" onclick="openPrintModal()">🖨️ In Báo Cáo</button>
-            <span class="badge-demo">Phiên Bản Giảng Dạy 高級</span>
+            <span class="badge-demo">Phiên Bản Giảng Dạy </span>
         </div>
     </header>
 
@@ -471,8 +470,12 @@
                 <div class="card-title">📝 Ghi Nhận Bút Toán</div>
                 <form id="entryForm">
                     <div class="form-group">
-                        <label>Ngày hạch toán</label>
-                        <input type="date" id="entryDate" class="form-control" required>
+                        <label>Số hiệu chứng từ</label>
+                        <input type="text" id="voucherNo" class="form-control" placeholder="Ví dụ: PKT001, UNC102, PT005..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày hạch toán (DD/MM/YYYY)</label>
+                        <input type="text" id="entryDate" class="form-control" placeholder="31/07/2026" pattern="^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$" title="Vui lòng nhập định dạng DD/MM/YYYY (Ví dụ: 31/07/2026)" required>
                     </div>
                     <div class="form-group">
                         <label>Diễn giải chứng từ</label>
@@ -519,19 +522,24 @@
 
         <!-- Cột phải: Nhật ký chung & Sổ cái -->
         <div>
-            <!-- Bảng Nhật ký chung -->
+            <!-- Bảng Nhật ký chung Mẫu S03a-DN chuẩn Luật Kế Toán -->
             <div class="card card-warning">
                 <div class="card-title">📖 Sổ Nhật Ký Chung</div>
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>Ngày</th>
-                                <th>Diễn giải</th>
-                                <th class="text-center">TK Nợ</th>
-                                <th class="text-center">TK Có</th>
-                                <th class="text-right">Số tiền</th>
-                                <th class="text-center col-action">Xóa</th>
+                                <th colspan="2" class="text-center">Chứng từ</th>
+                                <th rowspan="2" class="text-center" style="vertical-align: middle;">Ngày hạch toán</th>
+                                <th rowspan="2" style="vertical-align: middle;">Diễn giải</th>
+                                <th rowspan="2" class="text-center" style="vertical-align: middle;">TK Nợ</th>
+                                <th rowspan="2" class="text-center" style="vertical-align: middle;">TK Có</th>
+                                <th rowspan="2" class="text-right" style="vertical-align: middle;">Số tiền</th>
+                                <th rowspan="2" class="text-center col-action" style="vertical-align: middle;">Xóa</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center">Số hiệu</th>
+                                <th class="text-center">Ngày tháng</th>
                             </tr>
                         </thead>
                         <tbody id="journalTableBody"></tbody>
@@ -559,7 +567,7 @@
 
             <!-- Khối Chữ ký Chuẩn Mẫu Sổ Kế Toán (Hiện khi in) -->
             <div class="print-signature-box">
-                <div style="text-align: right; font-style: italic; margin-bottom: 10px;">
+                <div id="printDateText" style="text-align: right; font-style: italic; margin-bottom: 10px;">
                     Ngày ..... tháng ..... năm 20...
                 </div>
                 <div class="signature-grid">
@@ -613,7 +621,49 @@
 
         let transactions = []; 
 
-        document.getElementById('entryDate').valueAsDate = new Date();
+        // Khởi tạo ngày hạch toán mặc định theo định dạng DD/MM/YYYY
+        function getCurrentFormattedDate() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        document.getElementById('entryDate').value = getCurrentFormattedDate();
+
+        // Hàm hỗ trợ định dạng chuỗi số thành dấu chấm phân cách hàng nghìn
+        function formatNumberString(str) {
+            let num = str.replace(/\D/g, ''); // Xóa toàn bộ ký tự không phải số
+            if (!num) return '';
+            return parseInt(num, 10).toLocaleString('vi-VN');
+        }
+
+        // Lấy giá trị số thô (number) từ chuỗi đã định dạng
+        function parseRawAmount(val) {
+            if (!val) return 0;
+            return parseFloat(val.toString().replace(/\./g, '')) || 0;
+        }
+
+        // Xử lý khi người dùng nhập số tiền để giữ vị trí con trỏ không bị nhảy
+        function handleAmountInput(input) {
+            let cursorPosition = input.selectionStart;
+            let originalLength = input.value.length;
+            
+            let formatted = formatNumberString(input.value);
+            input.value = formatted;
+            
+            let newLength = input.value.length;
+            cursorPosition = cursorPosition + (newLength - originalLength);
+            input.setSelectionRange(cursorPosition, cursorPosition);
+
+            calculateFormTotals();
+        }
+
+        // Giữ nguyên chuỗi ngày truyền vào vì người dùng đã nhập dạng DD/MM/YYYY
+        function formatDateVN(dateStr) {
+            return dateStr || '';
+        }
 
         function getAccountOptions() {
             let html = '<option value="">-- Chọn TK --</option>';
@@ -627,9 +677,10 @@
             const container = document.getElementById('debitContainer');
             const row = document.createElement('div');
             row.className = 'entry-row debit-row';
+            let formattedAmount = amount !== '' ? formatNumberString(amount.toString()) : '';
             row.innerHTML = `
                 <select class="form-control debit-acc" required onchange="calculateFormTotals()">${getAccountOptions()}</select>
-                <input type="number" class="form-control debit-amount" placeholder="Số tiền" min="1" value="${amount}" required oninput="calculateFormTotals()">
+                <input type="text" class="form-control debit-amount text-right" placeholder="Số tiền" value="${formattedAmount}" required oninput="handleAmountInput(this)">
                 <button type="button" class="btn-icon" onclick="removeRow(this)">✕</button>
             `;
             container.appendChild(row);
@@ -641,9 +692,10 @@
             const container = document.getElementById('creditContainer');
             const row = document.createElement('div');
             row.className = 'entry-row credit-row';
+            let formattedAmount = amount !== '' ? formatNumberString(amount.toString()) : '';
             row.innerHTML = `
                 <select class="form-control credit-acc" required onchange="calculateFormTotals()">${getAccountOptions()}</select>
-                <input type="number" class="form-control credit-amount" placeholder="Số tiền" min="1" value="${amount}" required oninput="calculateFormTotals()">
+                <input type="text" class="form-control credit-amount text-right" placeholder="Số tiền" value="${formattedAmount}" required oninput="handleAmountInput(this)">
                 <button type="button" class="btn-icon" onclick="removeRow(this)">✕</button>
             `;
             container.appendChild(row);
@@ -661,11 +713,11 @@
             let totalCredit = 0;
 
             document.querySelectorAll('.debit-amount').forEach(input => {
-                totalDebit += parseFloat(input.value) || 0;
+                totalDebit += parseRawAmount(input.value);
             });
 
             document.querySelectorAll('.credit-amount').forEach(input => {
-                totalCredit += parseFloat(input.value) || 0;
+                totalCredit += parseRawAmount(input.value);
             });
 
             document.getElementById('subTotalDebit').innerText = totalDebit.toLocaleString('vi-VN');
@@ -690,6 +742,7 @@
         document.getElementById('entryForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            const voucherNo = document.getElementById('voucherNo').value;
             const date = document.getElementById('entryDate').value;
             const description = document.getElementById('description').value;
 
@@ -697,7 +750,7 @@
             document.querySelectorAll('.debit-row').forEach(row => {
                 debits.push({
                     acc: row.querySelector('.debit-acc').value,
-                    amount: parseFloat(row.querySelector('.debit-amount').value)
+                    amount: parseRawAmount(row.querySelector('.debit-amount').value)
                 });
             });
 
@@ -705,12 +758,13 @@
             document.querySelectorAll('.credit-row').forEach(row => {
                 credits.push({
                     acc: row.querySelector('.credit-acc').value,
-                    amount: parseFloat(row.querySelector('.credit-amount').value)
+                    amount: parseRawAmount(row.querySelector('.credit-amount').value)
                 });
             });
 
-            transactions.push({ id: Date.now(), date, description, debits, credits });
+            transactions.push({ id: Date.now(), voucherNo, date, description, debits, credits });
             
+            document.getElementById('voucherNo').value = '';
             document.getElementById('description').value = '';
             resetFormInputs();
             updateUI();
@@ -729,10 +783,11 @@
         }
 
         document.getElementById('btnSample').addEventListener('click', function() {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getCurrentFormattedDate();
             transactions = [
                 {
                     id: 1,
+                    voucherNo: "UNC001",
                     date: today,
                     description: "Mua Máy móc cố định gồm Thuế GTGT 10% thanh toán bằng Chuyển khoản",
                     debits: [
@@ -745,6 +800,7 @@
                 },
                 {
                     id: 2,
+                    voucherNo: "PT001",
                     date: today,
                     description: "Bán hàng thu tiền mặt một phần, còn lại nợ, chịu thuế GTGT 10%",
                     debits: [
@@ -777,18 +833,21 @@
             tbody.innerHTML = '';
 
             if (transactions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="color: #6b7280;">Chưa có bút toán nào.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: #6b7280;">Chưa có bút toán nào.</td></tr>`;
                 return;
             }
 
             transactions.forEach(t => {
                 const rowSpan = Math.max(t.debits.length, t.credits.length);
+                const formattedDate = formatDateVN(t.date);
                 
                 for (let i = 0; i < rowSpan; i++) {
                     const tr = document.createElement('tr');
                     
                     if (i === 0) {
-                        tr.innerHTML += `<td rowspan="${rowSpan}">${t.date}</td>`;
+                        tr.innerHTML += `<td rowspan="${rowSpan}" class="text-center" style="font-weight: bold;">${t.voucherNo || ''}</td>`;
+                        tr.innerHTML += `<td rowspan="${rowSpan}" class="text-center">${formattedDate}</td>`;
+                        tr.innerHTML += `<td rowspan="${rowSpan}" class="text-center">${formattedDate}</td>`;
                         tr.innerHTML += `<td rowspan="${rowSpan}">${t.description}</td>`;
                     }
 
@@ -898,6 +957,13 @@
 
             document.getElementById('printStudentName').innerText = name;
             document.getElementById('printStudentId').innerText = studentId;
+
+            // Cập nhật ngày tháng in trên báo cáo chuẩn Kế toán Việt Nam (Ngày ... tháng ... năm ...)
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            document.getElementById('printDateText').innerText = `Ngày ${day} tháng ${month} năm ${year}`;
 
             closePrintModal();
 
