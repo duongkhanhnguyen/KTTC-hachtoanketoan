@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phần Mềm Mô Phỏng Hạch Toán Kế Toán </title>
+    <title>Phần Mềm Mô Phỏng Hạch Toán Kế Toán</title>
     <style>
         :root {
             --primary-blue: #1e3a8a;
@@ -35,8 +35,7 @@
             background-color: var(--primary-blue);
             color: white;
             padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            border-radius: 8px 8px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -78,6 +77,45 @@
         .btn-print-header:hover {
             opacity: 0.9;
             transform: translateY(-1px);
+        }
+
+        /* TAB NAVIGATION STYLES */
+        .tab-container {
+            display: flex;
+            background: #1e293b;
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: white;
+        }
+
+        .tab-btn.active {
+            color: white;
+            border-bottom-color: var(--warning-yellow);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .summary-box {
@@ -359,32 +397,85 @@
             color: #4b5563;
         }
 
+        /* STYLES TRANG A4 SỔ CÁI MẪU CHUẨN KẾ TOÁN */
+        .a4-ledger-paper {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .ledger-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .company-info {
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .form-template-info {
+            text-align: right;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        .ledger-main-title {
+            text-align: center;
+            margin: 20px 0 10px 0;
+        }
+
+        .ledger-main-title h2 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            color: #000;
+        }
+
+        .ledger-main-title p {
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .ledger-account-head {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+        }
+
         /* ==========================================
-           CẤU HÌNH TRANG IN A4 NGANG (LANDSCAPE)
+           CẤU HÌNH TRANG IN A4 (PRINT STYLES)
         ========================================== */
         @media print {
             @page {
-                size: A4 landscape;
-                margin: 10mm;
+                size: A4 portrait;
+                margin: 12mm;
             }
 
             body {
                 background-color: white !important;
                 color: black !important;
                 padding: 0 !important;
-                font-size: 11pt;
+                font-size: 10pt;
             }
 
-            header, .summary-box, .grid-container > div:first-child, .modal-overlay, .btn-icon, .btn-add, .btn-group, .col-action {
+            header, .tab-container, .summary-box, .grid-container > div:first-child, .modal-overlay, .btn-icon, .btn-add, .btn-group, .col-action, .ledger-filter-card {
                 display: none !important;
             }
 
-            .grid-container {
+            /* Nếu đang ở tab Nhật Ký Chung */
+            #tab-journal.active .grid-container {
                 display: block !important;
                 width: 100% !important;
             }
 
-            .card {
+            #tab-journal.active .card {
                 box-shadow: none !important;
                 border: none !important;
                 padding: 0 !important;
@@ -392,10 +483,12 @@
                 width: 100% !important;
             }
 
-            .card-title {
-                font-size: 1.1rem !important;
-                color: black !important;
-                margin-bottom: 8px !important;
+            /* Nếu đang ở tab Sổ Cái */
+            #tab-ledger.active .a4-ledger-paper {
+                box-shadow: none !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
             }
 
             .print-student-info, .print-signature-box {
@@ -411,7 +504,7 @@
             th, td {
                 border: 1px solid #000 !important;
                 color: black !important;
-                padding: 6px 8px !important;
+                padding: 5px 6px !important;
                 word-wrap: break-word;
             }
 
@@ -433,12 +526,18 @@
 <body>
 
     <header>
-        <h1>Mô Phỏng Hạch Toán Kế Toán </h1>
+        <h1>Mô Phỏng Hạch Toán Kế Toán</h1>
         <div class="header-right">
-            <button type="button" class="btn-print-header" onclick="openPrintModal()">🖨️ In Báo Cáo</button>
-            <span class="badge-demo">Phiên Bản Giảng Dạy </span>
+            <button type="button" class="btn-print-header" onclick="openPrintModal()">🖨️ In Báo Cáo / Xuất PDF</button>
+            <span class="badge-demo">Phiên Bản Giảng Dạy</span>
         </div>
     </header>
+
+    <!-- Hệ Thống Tab Chuyển Đổi -->
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchTab('journal')">📖 Nhật Ký Chung & Tổng Hợp</button>
+        <button class="tab-btn" onclick="switchTab('ledger')">📘 Sổ Cái Chi Tiết Tài Khoản</button>
+    </div>
 
     <!-- Khối Thông Tin Sinh Viên Chỉ Hiện Khi In -->
     <div id="printStudentInfo" class="print-student-info">
@@ -447,127 +546,212 @@
         <p><strong>Mã số sinh viên:</strong> <span id="printStudentId"></span></p>
     </div>
 
-    <!-- Bảng tổng quan thông số -->
-    <div class="summary-box">
-        <div class="stat-card blue">
-            <div>Tổng Phát Sinh Nợ</div>
-            <div class="value" id="totalDebit">0 VNĐ</div>
+    <!-- ==================== TAB 1: NHẬT KÝ CHUNG ==================== -->
+    <div id="tab-journal" class="tab-content active">
+        <!-- Bảng tổng quan thông số -->
+        <div class="summary-box">
+            <div class="stat-card blue">
+                <div>Tổng Phát Sinh Nợ</div>
+                <div class="value" id="totalDebit">0 VNĐ</div>
+            </div>
+            <div class="stat-card red">
+                <div>Tổng Phát Sinh Có</div>
+                <div class="value" id="totalCredit">0 VNĐ</div>
+            </div>
+            <div class="stat-card yellow">
+                <div>Cân Bằng Sổ Sách</div>
+                <div class="value" id="balanceStatus">Cân Bằng</div>
+            </div>
         </div>
-        <div class="stat-card red">
-            <div>Tổng Phát Sinh Có</div>
-            <div class="value" id="totalCredit">0 VNĐ</div>
-        </div>
-        <div class="stat-card yellow">
-            <div>Cân Bằng Sổ Sách</div>
-            <div class="value" id="balanceStatus">Cân Bằng</div>
+
+        <div class="grid-container">
+            <!-- Cột trái: Form nhập nhiều Nợ nhiều Có -->
+            <div>
+                <div class="card">
+                    <div class="card-title">📝 Ghi Nhận Bút Toán</div>
+                    <form id="entryForm">
+                        <div class="form-group">
+                            <label>Số hiệu chứng từ</label>
+                            <input type="text" id="voucherNo" class="form-control" placeholder="Ví dụ: PKT001, UNC102, PT005..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày hạch toán (DD/MM/YYYY)</label>
+                            <input type="text" id="entryDate" class="form-control" placeholder="31/07/2026" pattern="^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$" title="Vui lòng nhập định dạng DD/MM/YYYY (Ví dụ: 31/07/2026)" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Diễn giải chứng từ</label>
+                            <input type="text" id="description" class="form-control" placeholder="Ví dụ: Mua TSCĐ gồm thuế GTGT thanh toán Chuyển khoản" required>
+                        </div>
+
+                        <!-- Khối Nhiều Nợ -->
+                        <div class="entry-section">
+                            <div class="entry-section-header">
+                                <span style="color: var(--accent-blue);">➕ CÁC TÀI KHOẢN NỢ</span>
+                                <button type="button" class="btn-add" onclick="addDebitRow()">+ Thêm TK Nợ</button>
+                            </div>
+                            <div id="debitContainer"></div>
+                            <div class="text-right" style="font-size: 0.85rem; font-weight: bold; color: var(--accent-blue);">
+                                Tổng Nợ: <span id="subTotalDebit">0</span> VNĐ
+                            </div>
+                        </div>
+
+                        <!-- Khối Nhiều Có -->
+                        <div class="entry-section">
+                            <div class="entry-section-header">
+                                <span style="color: var(--danger-red);">➖ CÁC TÀI KHOẢN CÓ</span>
+                                <button type="button" class="btn-add" style="background-color: var(--danger-red);" onclick="addCreditRow()">+ Thêm TK Có</button>
+                            </div>
+                            <div id="creditContainer"></div>
+                            <div class="text-right" style="font-size: 0.85rem; font-weight: bold; color: var(--danger-red);">
+                                Tổng Có: <span id="subTotalCredit">0</span> VNĐ
+                            </div>
+                        </div>
+
+                        <!-- Cảnh báo Cân bằng Bút toán hiện tại -->
+                        <div id="validationMsg" class="validation-msg msg-error">
+                            Tổng Nợ và Tổng Có phải bằng nhau!
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="submit" id="btnSubmit" class="btn btn-primary" disabled>Hạch Toán</button>
+                            <button type="button" id="btnSample" class="btn btn-warning">Mẫu Lớp Học</button>
+                            <button type="button" id="btnClear" class="btn btn-danger">Xóa Hết</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cột phải: Nhật ký chung & Sổ cái -->
+            <div>
+                <!-- Bảng Nhật ký chung Mẫu S03a-DN chuẩn Luật Kế Toán -->
+                <div class="card card-warning">
+                    <div class="card-title">📖 Sổ Nhật Ký Chung</div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="text-center">Chứng từ</th>
+                                    <th rowspan="2" class="text-center" style="vertical-align: middle;">Ngày hạch toán</th>
+                                    <th rowspan="2" style="vertical-align: middle;">Diễn giải</th>
+                                    <th rowspan="2" class="text-center" style="vertical-align: middle;">TK Nợ</th>
+                                    <th rowspan="2" class="text-center" style="vertical-align: middle;">TK Có</th>
+                                    <th rowspan="2" class="text-right" style="vertical-align: middle;">Số tiền</th>
+                                    <th rowspan="2" class="text-center col-action" style="vertical-align: middle;">Xóa</th>
+                                </tr>
+                                <tr>
+                                    <th class="text-center">Số hiệu</th>
+                                    <th class="text-center">Ngày tháng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="journalTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bảng Sổ cái tổng hợp T-Account -->
+                <div class="card card-danger">
+                    <div class="card-title">📊 Sổ Cái Tổng Hợp Các Tài Khoản</div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã TK</th>
+                                    <th>Tên Tài Khoản</th>
+                                    <th class="text-right">Phát Sinh Nợ</th>
+                                    <th class="text-right">Phát Sinh Có</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Khối Chữ ký Chuẩn Mẫu Sổ Kế Toán (Hiện khi in) -->
+                <div class="print-signature-box">
+                    <div class="printDateText" style="text-align: right; font-style: italic; margin-bottom: 10px;">
+                        Ngày ..... tháng ..... năm 20...
+                    </div>
+                    <div class="signature-grid">
+                        <div class="signature-col">
+                            <div class="title">Người Lập Biểu</div>
+                            <div class="subtitle">(Ký, họ tên)</div>
+                        </div>
+                        <div class="signature-col">
+                            <div class="title">Kế Toán Trưởng</div>
+                            <div class="subtitle">(Ký, họ tên)</div>
+                        </div>
+                        <div class="signature-col">
+                            <div class="title">Giám Đốc / Thủ Trưởng Đơn Vị</div>
+                            <div class="subtitle">(Ký, họ tên, đóng dấu)</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <div class="grid-container">
-        <!-- Cột trái: Form nhập nhiều Nợ nhiều Có -->
-        <div>
-            <div class="card">
-                <div class="card-title">📝 Ghi Nhận Bút Toán</div>
-                <form id="entryForm">
-                    <div class="form-group">
-                        <label>Số hiệu chứng từ</label>
-                        <input type="text" id="voucherNo" class="form-control" placeholder="Ví dụ: PKT001, UNC102, PT005..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày hạch toán (DD/MM/YYYY)</label>
-                        <input type="text" id="entryDate" class="form-control" placeholder="31/07/2026" pattern="^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$" title="Vui lòng nhập định dạng DD/MM/YYYY (Ví dụ: 31/07/2026)" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Diễn giải chứng từ</label>
-                        <input type="text" id="description" class="form-control" placeholder="Ví dụ: Mua TSCĐ gồm thuế GTGT thanh toán Chuyển khoản" required>
-                    </div>
-
-                    <!-- Khối Nhiều Nợ -->
-                    <div class="entry-section">
-                        <div class="entry-section-header">
-                            <span style="color: var(--accent-blue);">➕ CÁC TÀI KHOẢN NỢ</span>
-                            <button type="button" class="btn-add" onclick="addDebitRow()">+ Thêm TK Nợ</button>
-                        </div>
-                        <div id="debitContainer"></div>
-                        <div class="text-right" style="font-size: 0.85rem; font-weight: bold; color: var(--accent-blue);">
-                            Tổng Nợ: <span id="subTotalDebit">0</span> VNĐ
-                        </div>
-                    </div>
-
-                    <!-- Khối Nhiều Có -->
-                    <div class="entry-section">
-                        <div class="entry-section-header">
-                            <span style="color: var(--danger-red);">➖ CÁC TÀI KHOẢN CÓ</span>
-                            <button type="button" class="btn-add" style="background-color: var(--danger-red);" onclick="addCreditRow()">+ Thêm TK Có</button>
-                        </div>
-                        <div id="creditContainer"></div>
-                        <div class="text-right" style="font-size: 0.85rem; font-weight: bold; color: var(--danger-red);">
-                            Tổng Có: <span id="subTotalCredit">0</span> VNĐ
-                        </div>
-                    </div>
-
-                    <!-- Cảnh báo Cân bằng Bút toán hiện tại -->
-                    <div id="validationMsg" class="validation-msg msg-error">
-                        Tổng Nợ và Tổng Có phải bằng nhau!
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="submit" id="btnSubmit" class="btn btn-primary" disabled>Hạch Toán</button>
-                        <button type="button" id="btnSample" class="btn btn-warning">Mẫu Lớp Học</button>
-                        <button type="button" id="btnClear" class="btn btn-danger">Xóa Hết</button>
-                    </div>
-                </form>
+    <!-- ==================== TAB 2: SỔ CÁI CHI TIẾT A4 ==================== -->
+    <div id="tab-ledger" class="tab-content">
+        <!-- Khối chọn tài khoản -->
+        <div class="card ledger-filter-card" style="border-top-color: var(--success-green);">
+            <div class="card-title">🔍 Lựa Chọn Sổ Cái Tài Khoản Cần Xem</div>
+            <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="font-weight: bold; font-size: 0.85rem; display: block; margin-bottom: 5px;">Nhập bằng tay hoặc chọn TK cần xem:</label>
+                    <input type="text" id="ledgerAccountInput" list="accountOptionsList" class="form-control" placeholder="Ví dụ: 111, 112, 131, 211, 511..." style="text-transform: uppercase;">
+                    <datalist id="accountOptionsList"></datalist>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success" onclick="viewDetailedLedger()" style="padding: 9px 25px;">🔍 Xem Sổ Cái</button>
+                </div>
             </div>
         </div>
 
-        <!-- Cột phải: Nhật ký chung & Sổ cái -->
-        <div>
-            <!-- Bảng Nhật ký chung Mẫu S03a-DN chuẩn Luật Kế Toán -->
-            <div class="card card-warning">
-                <div class="card-title">📖 Sổ Nhật Ký Chung</div>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="text-center">Chứng từ</th>
-                                <th rowspan="2" class="text-center" style="vertical-align: middle;">Ngày hạch toán</th>
-                                <th rowspan="2" style="vertical-align: middle;">Diễn giải</th>
-                                <th rowspan="2" class="text-center" style="vertical-align: middle;">TK Nợ</th>
-                                <th rowspan="2" class="text-center" style="vertical-align: middle;">TK Có</th>
-                                <th rowspan="2" class="text-right" style="vertical-align: middle;">Số tiền</th>
-                                <th rowspan="2" class="text-center col-action" style="vertical-align: middle;">Xóa</th>
-                            </tr>
-                            <tr>
-                                <th class="text-center">Số hiệu</th>
-                                <th class="text-center">Ngày tháng</th>
-                            </tr>
-                        </thead>
-                        <tbody id="journalTableBody"></tbody>
-                    </table>
+        <!-- Mẫu Sổ Cái A4 Chuẩn Kế Toán Việt Nam -->
+        <div class="a4-ledger-paper">
+            <div class="ledger-header">
+                <div class="company-info">
+                    <strong>Đơn vị:</strong> Công ty Mô Phỏng Thực Hành<br>
+                    <strong>Địa chỉ:</strong> Phòng Thực Hành Kế Toán
+                </div>
+                <div class="form-template-info">
+                    <strong>Mẫu số S03b-DN</strong><br>
+                    (Ban hành theo Thông tư số 200/2014/TT-BTC<br>ngày 22/12/2014 của Bộ Tài chính)
                 </div>
             </div>
 
-            <!-- Bảng Sổ cái tổng hợp T-Account -->
-            <div class="card card-danger">
-                <div class="card-title">📊 Sổ Cái Tổng Hợp Các Tài Khoản</div>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Mã TK</th>
-                                <th>Tên Tài Khoản</th>
-                                <th class="text-right">Phát Sinh Nợ</th>
-                                <th class="text-right">Phát Sinh Có</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledgerTableBody"></tbody>
-                    </table>
-                </div>
+            <div class="ledger-main-title">
+                <h2>SỔ CÁI</h2>
+                <p id="detailedLedgerTitle">TÀI KHOẢN: ...</p>
             </div>
 
-            <!-- Khối Chữ ký Chuẩn Mẫu Sổ Kế Toán (Hiện khi in) -->
-            <div class="print-signature-box">
-                <div id="printDateText" style="text-align: right; font-style: italic; margin-bottom: 10px;">
+            <table style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th colspan="2" class="text-center">Chứng từ</th>
+                        <th rowspan="2" class="text-center" style="vertical-align: middle;">Ngày hạch toán</th>
+                        <th rowspan="2" style="vertical-align: middle;">Diễn giải</th>
+                        <th rowspan="2" class="text-center" style="vertical-align: middle; width: 80px;">TK đối ứng</th>
+                        <th colspan="2" class="text-center">Số phát sinh</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center" style="width: 90px;">Số hiệu</th>
+                        <th class="text-center" style="width: 90px;">Ngày tháng</th>
+                        <th class="text-right" style="width: 120px;">Nợ</th>
+                        <th class="text-right" style="width: 120px;">Có</th>
+                    </tr>
+                </thead>
+                <tbody id="detailedLedgerBody">
+                    <tr>
+                        <td colspan="7" class="text-center" style="padding: 20px; color: #6b7280;">Vui lòng nhập tài khoản và bấm "Xem Sổ Cái"</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Khối Chữ ký khi in cho Sổ Cái -->
+            <div class="print-signature-box" style="display: block; margin-top: 30px;">
+                <div class="printDateText" style="text-align: right; font-style: italic; margin-bottom: 15px;">
                     Ngày ..... tháng ..... năm 20...
                 </div>
                 <div class="signature-grid">
@@ -585,7 +769,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -606,7 +789,7 @@
                     <input type="text" id="studentId" class="form-control" placeholder="Nhập mã số sinh viên..." required>
                 </div>
                 <div class="btn-group" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-success">Thực Hiện In File</button>
+                    <button type="submit" class="btn btn-success">Thực Hiện In / Xuất PDF</button>
                     <button type="button" class="btn btn-danger" onclick="closePrintModal()">Hủy</button>
                 </div>
             </form>
@@ -621,6 +804,32 @@
 
         let transactions = []; 
 
+        // Khởi tạo Datalist gợi ý cho Tab Sổ Cái Chi Tiết
+        function initAccountDatalist() {
+            const list = document.getElementById('accountOptionsList');
+            list.innerHTML = '';
+            Object.keys(accountMap).forEach(acc => {
+                const opt = document.createElement('option');
+                opt.value = acc;
+                opt.label = `${acc} - ${accountMap[acc]}`;
+                list.appendChild(opt);
+            });
+        }
+
+        // Chuyển Tab
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'journal') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-journal').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-ledger').classList.add('active');
+            }
+        }
+
         // Khởi tạo ngày hạch toán mặc định theo định dạng DD/MM/YYYY
         function getCurrentFormattedDate() {
             const today = new Date();
@@ -634,7 +843,7 @@
 
         // Hàm hỗ trợ định dạng chuỗi số thành dấu chấm phân cách hàng nghìn
         function formatNumberString(str) {
-            let num = str.replace(/\D/g, ''); // Xóa toàn bộ ký tự không phải số
+            let num = str.replace(/\D/g, ''); 
             if (!num) return '';
             return parseInt(num, 10).toLocaleString('vi-VN');
         }
@@ -645,7 +854,7 @@
             return parseFloat(val.toString().replace(/\./g, '')) || 0;
         }
 
-        // Xử lý khi người dùng nhập số tiền để giữ vị trí con trỏ không bị nhảy
+        // Xử lý khi người dùng nhập số tiền
         function handleAmountInput(input) {
             let cursorPosition = input.selectionStart;
             let originalLength = input.value.length;
@@ -660,7 +869,6 @@
             calculateFormTotals();
         }
 
-        // Giữ nguyên chuỗi ngày truyền vào vì người dùng đã nhập dạng DD/MM/YYYY
         function formatDateVN(dateStr) {
             return dateStr || '';
         }
@@ -826,6 +1034,12 @@
         function updateUI() {
             renderJournal();
             renderLedger();
+            
+            // Nếu người dùng đang chọn TK ở Tab Sổ Cái thì tự động cập nhật lại
+            const currentAcc = document.getElementById('ledgerAccountInput').value.trim();
+            if (currentAcc) {
+                viewDetailedLedger();
+            }
         }
 
         function renderJournal() {
@@ -924,7 +1138,6 @@
             if (!hasData) {
                 tbody.innerHTML = `<tr><td colspan="4" class="text-center" style="color: #6b7280;">Chưa có dữ liệu sổ cái.</td></tr>`;
             } else {
-                // Thêm Dòng TỔNG PHÁT SINH chuẩn mẫu kế toán hiện hành
                 const totalTr = document.createElement('tr');
                 totalTr.className = 'row-total';
                 totalTr.innerHTML = `
@@ -939,6 +1152,131 @@
             document.getElementById('totalDebit').innerText = grandTotalDebit.toLocaleString('vi-VN') + ' VNĐ';
             document.getElementById('totalCredit').innerText = grandTotalCredit.toLocaleString('vi-VN') + ' VNĐ';
             document.getElementById('balanceStatus').innerText = (grandTotalDebit === grandTotalCredit && grandTotalDebit > 0) ? "Cân Bằng" : "Chưa Khởi Tạo";
+        }
+
+        // --- HÀM XEM SỔ CÁI CHI TIẾT TÀI KHOẢN (MẪU CHUẨN A4) ---
+        function viewDetailedLedger() {
+            const accTarget = document.getElementById('ledgerAccountInput').value.trim();
+            const tbody = document.getElementById('detailedLedgerBody');
+            const titleElem = document.getElementById('detailedLedgerTitle');
+
+            if (!accTarget) {
+                alert('Vui lòng nhập hoặc chọn Số hiệu Tài khoản cần xem Sổ Cái!');
+                return;
+            }
+
+            const accName = accountMap[accTarget] || 'Tài khoản chi tiết';
+            titleElem.innerHTML = `TÀI KHOẢN: ${accTarget} - ${accName.toUpperCase()}`;
+
+            tbody.innerHTML = '';
+
+            // Dòng Số Dư Đầu Kỳ
+            const openingRow = document.createElement('tr');
+            openingRow.innerHTML = `
+                <td class="text-center">-</td>
+                <td class="text-center">-</td>
+                <td class="text-center">-</td>
+                <td style="font-weight: bold;">Số dư đầu kỳ</td>
+                <td class="text-center">-</td>
+                <td class="text-right">0</td>
+                <td class="text-right">0</td>
+            `;
+            tbody.appendChild(openingRow);
+
+            let totalDebit = 0;
+            let totalCredit = 0;
+            let entriesCount = 0;
+
+            // Duyệt qua tất cả giao dịch để trích xuất phát sinh liên quan đến accTarget
+            transactions.forEach(t => {
+                const isDebit = t.debits.some(d => d.acc === accTarget);
+                const isCredit = t.credits.some(c => c.acc === accTarget);
+
+                if (isDebit) {
+                    const debitItem = t.debits.find(d => d.acc === accTarget);
+                    const counterpartAccs = t.credits.map(c => c.acc).join(', ');
+
+                    totalDebit += debitItem.amount;
+                    entriesCount++;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-center" style="font-weight: bold;">${t.voucherNo || ''}</td>
+                        <td class="text-center">${formatDateVN(t.date)}</td>
+                        <td class="text-center">${formatDateVN(t.date)}</td>
+                        <td>${t.description}</td>
+                        <td class="text-center badge-credit">${counterpartAccs}</td>
+                        <td class="text-right">${debitItem.amount.toLocaleString('vi-VN')}</td>
+                        <td class="text-right">-</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+
+                if (isCredit) {
+                    const creditItem = t.credits.find(c => c.acc === accTarget);
+                    const counterpartAccs = t.debits.map(d => d.acc).join(', ');
+
+                    totalCredit += creditItem.amount;
+                    entriesCount++;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-center" style="font-weight: bold;">${t.voucherNo || ''}</td>
+                        <td class="text-center">${formatDateVN(t.date)}</td>
+                        <td class="text-center">${formatDateVN(t.date)}</td>
+                        <td>${t.description}</td>
+                        <td class="text-center badge-debit">${counterpartAccs}</td>
+                        <td class="text-right">-</td>
+                        <td class="text-right">${creditItem.amount.toLocaleString('vi-VN')}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (entriesCount === 0) {
+                const emptyTr = document.createElement('tr');
+                emptyTr.innerHTML = `
+                    <td colspan="7" class="text-center" style="padding: 15px; color: #6b7280; font-style: italic;">
+                        Không có phát sinh nào trong kỳ cho Tài Khoản ${accTarget}.
+                    </td>
+                `;
+                tbody.appendChild(emptyTr);
+            }
+
+            // Dòng Cộng Phát Sinh Trong Kỳ
+            const sumRow = document.createElement('tr');
+            sumRow.className = 'row-total';
+            sumRow.innerHTML = `
+                <td colspan="5" class="text-center" style="font-weight: bold;">CỘNG PHÁT SINH TRONG KỲ</td>
+                <td class="text-right badge-debit" style="font-weight: bold;">${totalDebit.toLocaleString('vi-VN')}</td>
+                <td class="text-right badge-credit" style="font-weight: bold;">${totalCredit.toLocaleString('vi-VN')}</td>
+            `;
+            tbody.appendChild(sumRow);
+
+            // Dòng Số Dư Cuối Kỳ
+            let endingDebit = 0;
+            let endingCredit = 0;
+            const diff = totalDebit - totalCredit;
+
+            // Quy tắc tính số dư theo loại tài khoản
+            const firstChar = accTarget.charAt(0);
+            if (['1', '2', '6', '8'].includes(firstChar)) {
+                if (diff >= 0) endingDebit = diff;
+                else endingCredit = Math.abs(diff);
+            } else {
+                if (diff <= 0) endingCredit = Math.abs(diff);
+                else endingDebit = diff;
+            }
+
+            const endingRow = document.createElement('tr');
+            endingRow.className = 'row-total';
+            endingRow.style.backgroundColor = '#e0e7ff';
+            endingRow.innerHTML = `
+                <td colspan="5" class="text-center" style="font-weight: bold;">SỐ DƯ CUỐI KỲ</td>
+                <td class="text-right badge-debit" style="font-weight: bold;">${endingDebit > 0 ? endingDebit.toLocaleString('vi-VN') : '0'}</td>
+                <td class="text-right badge-credit" style="font-weight: bold;">${endingCredit > 0 ? endingCredit.toLocaleString('vi-VN') : '0'}</td>
+            `;
+            tbody.appendChild(endingRow);
         }
 
         // --- CÁC HÀM XỬ LÝ NÚT IN VÀ MODAL ---
@@ -958,19 +1296,23 @@
             document.getElementById('printStudentName').innerText = name;
             document.getElementById('printStudentId').innerText = studentId;
 
-            // Cập nhật ngày tháng in trên báo cáo chuẩn Kế toán Việt Nam (Ngày ... tháng ... năm ...)
+            // Cập nhật ngày tháng in trên báo cáo chuẩn Kế toán Việt Nam
             const now = new Date();
             const day = String(now.getDate()).padStart(2, '0');
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const year = now.getFullYear();
-            document.getElementById('printDateText').innerText = `Ngày ${day} tháng ${month} năm ${year}`;
+            
+            document.querySelectorAll('.printDateText').forEach(elem => {
+                elem.innerText = `Ngày ${day} tháng ${month} năm ${year}`;
+            });
 
             closePrintModal();
 
-            // Lệnh in trình duyệt A4 Ngang
+            // Lệnh in hoặc xuất PDF từ trình duyệt
             window.print();
         }
 
+        initAccountDatalist();
         resetFormInputs();
         updateUI();
     </script>
