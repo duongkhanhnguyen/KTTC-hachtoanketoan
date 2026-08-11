@@ -195,6 +195,21 @@
             font-size: 0.9rem;
         }
 
+        .input-opening {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            text-align: right;
+            background-color: #fff;
+        }
+
+        .input-opening:focus {
+            outline: 2px solid var(--accent-blue);
+            background-color: #ffffff;
+        }
+
         .entry-section {
             background-color: #f9fafb;
             padding: 12px;
@@ -462,11 +477,21 @@
                 background-color: white !important;
                 color: black !important;
                 padding: 0 !important;
-                font-size: 10pt;
+                font-size: 12pt !important;
+                line-height: 1.15 !important;
             }
 
             header, .tab-container, .summary-box, .grid-container > div:first-child, .modal-overlay, .btn-icon, .btn-add, .btn-group, .col-action, .ledger-filter-card {
                 display: none !important;
+            }
+
+            /* Ẩn các ô nhập tay khi in và chỉ hiển thị text */
+            .input-opening {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                font-size: 12pt !important;
+                line-height: 1.15 !important;
             }
 
             /* Nếu đang ở tab Nhật Ký Chung */
@@ -499,6 +524,8 @@
                 width: 100% !important;
                 border-collapse: collapse !important;
                 table-layout: auto !important;
+                font-size: 12pt !important;
+                line-height: 1.15 !important;
             }
 
             th, td {
@@ -506,6 +533,8 @@
                 color: black !important;
                 padding: 5px 6px !important;
                 word-wrap: break-word;
+                font-size: 12pt !important;
+                line-height: 1.15 !important;
             }
 
             th {
@@ -519,6 +548,11 @@
 
             .badge-debit, .badge-credit {
                 color: black !important;
+            }
+
+            .company-info, .form-template-info, .print-student-info p, .signature-col .title, .signature-col .subtitle {
+                font-size: 12pt !important;
+                line-height: 1.15 !important;
             }
         }
     </style>
@@ -655,10 +689,19 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Mã TK</th>
-                                    <th>Tên Tài Khoản</th>
-                                    <th class="text-right">Phát Sinh Nợ</th>
-                                    <th class="text-right">Phát Sinh Có</th>
+                                    <th rowspan="2" style="vertical-align: middle;">Mã TK</th>
+                                    <th rowspan="2" style="vertical-align: middle;">Tên Tài Khoản</th>
+                                    <th colspan="2" class="text-center">Số Dư Đầu Kỳ</th>
+                                    <th colspan="2" class="text-center">Phát Sinh Trong Kỳ</th>
+                                    <th colspan="2" class="text-center">Số Dư Cuối Kỳ</th>
+                                </tr>
+                                <tr>
+                                    <th class="text-right" style="width: 100px;">Nợ</th>
+                                    <th class="text-right" style="width: 100px;">Có</th>
+                                    <th class="text-right" style="width: 100px;">Nợ</th>
+                                    <th class="text-right" style="width: 100px;">Có</th>
+                                    <th class="text-right" style="width: 100px;">Nợ</th>
+                                    <th class="text-right" style="width: 100px;">Có</th>
                                 </tr>
                             </thead>
                             <tbody id="ledgerTableBody"></tbody>
@@ -803,6 +846,7 @@
         };
 
         let transactions = []; 
+        let openingBalances = {}; // Lưu trữ số dư đầu kỳ: { '111': { debit: 0, credit: 0 }, ... }
 
         // Khởi tạo Datalist gợi ý cho Tab Sổ Cái Chi Tiết
         function initAccountDatalist() {
@@ -843,7 +887,7 @@
 
         // Hàm hỗ trợ định dạng chuỗi số thành dấu chấm phân cách hàng nghìn
         function formatNumberString(str) {
-            let num = str.replace(/\D/g, ''); 
+            let num = str.toString().replace(/\D/g, ''); 
             if (!num) return '';
             return parseInt(num, 10).toLocaleString('vi-VN');
         }
@@ -854,7 +898,7 @@
             return parseFloat(val.toString().replace(/\./g, '')) || 0;
         }
 
-        // Xử lý khi người dùng nhập số tiền
+        // Xử lý khi người dùng nhập số tiền trong form hạch toán
         function handleAmountInput(input) {
             let cursorPosition = input.selectionStart;
             let originalLength = input.value.length;
@@ -867,6 +911,31 @@
             input.setSelectionRange(cursorPosition, cursorPosition);
 
             calculateFormTotals();
+        }
+
+        // Xử lý nhập Số dư đầu kỳ tại Bảng Sổ Cái Tổng Hợp
+        function handleOpeningBalanceInput(input, acc, type) {
+            let cursorPosition = input.selectionStart;
+            let originalLength = input.value.length;
+
+            let formatted = formatNumberString(input.value);
+            input.value = formatted;
+
+            let newLength = input.value.length;
+            cursorPosition = cursorPosition + (newLength - originalLength);
+            input.setSelectionRange(cursorPosition, cursorPosition);
+
+            if (!openingBalances[acc]) {
+                openingBalances[acc] = { debit: 0, credit: 0 };
+            }
+            openingBalances[acc][type] = parseRawAmount(input.value);
+
+            // Cập nhật lại UI Sổ cái tổng hợp và Sổ cái chi tiết nếu đang mở
+            renderLedger();
+            const currentAcc = document.getElementById('ledgerAccountInput').value.trim();
+            if (currentAcc === acc) {
+                viewDetailedLedger();
+            }
         }
 
         function formatDateVN(dateStr) {
@@ -1025,8 +1094,9 @@
         });
 
         document.getElementById('btnClear').addEventListener('click', function() {
-            if (confirm('Xóa toàn bộ sổ sách hiện tại?')) {
+            if (confirm('Xóa toàn bộ sổ sách và số dư đầu kỳ hiện tại?')) {
                 transactions = [];
+                openingBalances = {};
                 updateUI();
             }
         });
@@ -1093,9 +1163,13 @@
             });
         }
 
-        // Render Sổ cái tổng hợp
+        // Render Sổ cái tổng hợp (Bổ sung Số Dư Đầu Kỳ & Số Dư Cuối Kỳ)
         function renderLedger() {
             const tbody = document.getElementById('ledgerTableBody');
+            
+            // Lưu lại vị trí ô đang được focus nếu người dùng đang gõ số dư đầu kỳ
+            const activeElementId = document.activeElement ? document.activeElement.id : null;
+
             tbody.innerHTML = '';
 
             const ledgerMap = {};
@@ -1119,39 +1193,100 @@
                 });
             });
 
-            let hasData = false;
+            // Tập hợp tất cả tài khoản có Phát sinh HOẶC có Số dư đầu kỳ
+            const activeAccounts = new Set();
             Object.keys(ledgerMap).forEach(acc => {
-                const { debit, credit } = ledgerMap[acc];
-                if (debit > 0 || credit > 0) {
-                    hasData = true;
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="font-weight: bold;">${acc}</td>
-                        <td>${accountMap[acc] || 'Tài khoản mở rộng'}</td>
-                        <td class="text-right badge-debit">${debit > 0 ? debit.toLocaleString('vi-VN') : '-'}</td>
-                        <td class="text-right badge-credit">${credit > 0 ? credit.toLocaleString('vi-VN') : '-'}</td>
-                    `;
-                    tbody.appendChild(tr);
+                if (ledgerMap[acc].debit > 0 || ledgerMap[acc].credit > 0) {
+                    activeAccounts.add(acc);
+                }
+            });
+            Object.keys(openingBalances).forEach(acc => {
+                const op = openingBalances[acc];
+                if ((op && op.debit > 0) || (op && op.credit > 0)) {
+                    activeAccounts.add(acc);
                 }
             });
 
-            if (!hasData) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center" style="color: #6b7280;">Chưa có dữ liệu sổ cái.</td></tr>`;
-            } else {
-                const totalTr = document.createElement('tr');
-                totalTr.className = 'row-total';
-                totalTr.innerHTML = `
-                    <td colspan="2" class="text-center">TỔNG PHÁT SINH</td>
-                    <td class="text-right badge-debit">${grandTotalDebit.toLocaleString('vi-VN')}</td>
-                    <td class="text-right badge-credit">${grandTotalCredit.toLocaleString('vi-VN')}</td>
+            // Nếu chưa có dữ liệu gì, hiển thị mặc định danh sách các TK phổ biến để nhập số dư đầu kỳ
+            if (activeAccounts.size === 0) {
+                ['111', '112', '131', '152', '156', '211', '331', '334', '3331', '4111'].forEach(a => activeAccounts.add(a));
+            }
+
+            let totalOpDebit = 0;
+            let totalOpCredit = 0;
+            let totalEndDebit = 0;
+            let totalEndCredit = 0;
+
+            Array.from(activeAccounts).sort().forEach(acc => {
+                const { debit, credit } = ledgerMap[acc] || { debit: 0, credit: 0 };
+                const opDebit = openingBalances[acc]?.debit || 0;
+                const opCredit = openingBalances[acc]?.credit || 0;
+
+                totalOpDebit += opDebit;
+                totalOpCredit += opCredit;
+
+                // Tính Số dư cuối kỳ tự động theo bản chất Tài khoản
+                let endDebit = 0;
+                let endCredit = 0;
+                const netAmount = (opDebit - opCredit) + (debit - credit);
+
+                const firstChar = acc.charAt(0);
+                if (['1', '2', '6', '8'].includes(firstChar)) {
+                    if (netAmount >= 0) endDebit = netAmount;
+                    else endCredit = Math.abs(netAmount);
+                } else {
+                    if (netAmount <= 0) endCredit = Math.abs(netAmount);
+                    else endDebit = netAmount;
+                }
+
+                totalEndDebit += endDebit;
+                totalEndCredit += endCredit;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: bold;">${acc}</td>
+                    <td>${accountMap[acc] || 'Tài khoản mở rộng'}</td>
+                    <!-- Số dư đầu kỳ nhập tay -->
+                    <td><input type="text" id="op_debit_${acc}" class="input-opening" value="${opDebit > 0 ? opDebit.toLocaleString('vi-VN') : ''}" placeholder="0" oninput="handleOpeningBalanceInput(this, '${acc}', 'debit')"></td>
+                    <td><input type="text" id="op_credit_${acc}" class="input-opening" value="${opCredit > 0 ? opCredit.toLocaleString('vi-VN') : ''}" placeholder="0" oninput="handleOpeningBalanceInput(this, '${acc}', 'credit')"></td>
+                    <!-- Phát sinh trong kỳ -->
+                    <td class="text-right badge-debit">${debit > 0 ? debit.toLocaleString('vi-VN') : '-'}</td>
+                    <td class="text-right badge-credit">${credit > 0 ? credit.toLocaleString('vi-VN') : '-'}</td>
+                    <!-- Số dư cuối kỳ tự động -->
+                    <td class="text-right badge-debit" style="font-weight: bold;">${endDebit > 0 ? endDebit.toLocaleString('vi-VN') : '-'}</td>
+                    <td class="text-right badge-credit" style="font-weight: bold;">${endCredit > 0 ? endCredit.toLocaleString('vi-VN') : '-'}</td>
                 `;
-                tbody.appendChild(totalTr);
+                tbody.appendChild(tr);
+            });
+
+            // Dòng Tổng Cộng
+            const totalTr = document.createElement('tr');
+            totalTr.className = 'row-total';
+            totalTr.innerHTML = `
+                <td colspan="2" class="text-center">TỔNG CỘNG</td>
+                <td class="text-right badge-debit">${totalOpDebit.toLocaleString('vi-VN')}</td>
+                <td class="text-right badge-credit">${totalOpCredit.toLocaleString('vi-VN')}</td>
+                <td class="text-right badge-debit">${grandTotalDebit.toLocaleString('vi-VN')}</td>
+                <td class="text-right badge-credit">${grandTotalCredit.toLocaleString('vi-VN')}</td>
+                <td class="text-right badge-debit">${totalEndDebit.toLocaleString('vi-VN')}</td>
+                <td class="text-right badge-credit">${totalEndCredit.toLocaleString('vi-VN')}</td>
+            `;
+            tbody.appendChild(totalTr);
+
+            // Restore focus nếu đang gõ
+            if (activeElementId) {
+                const elem = document.getElementById(activeElementId);
+                if (elem) {
+                    elem.focus();
+                    const valLen = elem.value.length;
+                    elem.setSelectionRange(valLen, valLen);
+                }
             }
 
             // Update Top Cards
             document.getElementById('totalDebit').innerText = grandTotalDebit.toLocaleString('vi-VN') + ' VNĐ';
             document.getElementById('totalCredit').innerText = grandTotalCredit.toLocaleString('vi-VN') + ' VNĐ';
-            document.getElementById('balanceStatus').innerText = (grandTotalDebit === grandTotalCredit && grandTotalDebit > 0) ? "Cân Bằng" : "Chưa Khởi Tạo";
+            document.getElementById('balanceStatus').innerText = (grandTotalDebit === grandTotalCredit && (grandTotalDebit > 0 || totalOpDebit > 0)) ? "Cân Bằng" : "Chưa Khởi Tạo";
         }
 
         // --- HÀM XEM SỔ CÁI CHI TIẾT TÀI KHOẢN (MẪU CHUẨN A4) ---
@@ -1170,6 +1305,10 @@
 
             tbody.innerHTML = '';
 
+            // Lấy Số dư đầu kỳ đã nhập
+            const opDebit = openingBalances[accTarget]?.debit || 0;
+            const opCredit = openingBalances[accTarget]?.credit || 0;
+
             // Dòng Số Dư Đầu Kỳ
             const openingRow = document.createElement('tr');
             openingRow.innerHTML = `
@@ -1178,8 +1317,8 @@
                 <td class="text-center">-</td>
                 <td style="font-weight: bold;">Số dư đầu kỳ</td>
                 <td class="text-center">-</td>
-                <td class="text-right">0</td>
-                <td class="text-right">0</td>
+                <td class="text-right">${opDebit > 0 ? opDebit.toLocaleString('vi-VN') : '0'}</td>
+                <td class="text-right">${opCredit > 0 ? opCredit.toLocaleString('vi-VN') : '0'}</td>
             `;
             tbody.appendChild(openingRow);
 
@@ -1256,16 +1395,16 @@
             // Dòng Số Dư Cuối Kỳ
             let endingDebit = 0;
             let endingCredit = 0;
-            const diff = totalDebit - totalCredit;
+            const netAmount = (opDebit - opCredit) + (totalDebit - totalCredit);
 
             // Quy tắc tính số dư theo loại tài khoản
             const firstChar = accTarget.charAt(0);
             if (['1', '2', '6', '8'].includes(firstChar)) {
-                if (diff >= 0) endingDebit = diff;
-                else endingCredit = Math.abs(diff);
+                if (netAmount >= 0) endingDebit = netAmount;
+                else endingCredit = Math.abs(netAmount);
             } else {
-                if (diff <= 0) endingCredit = Math.abs(diff);
-                else endingDebit = diff;
+                if (netAmount <= 0) endingCredit = Math.abs(netAmount);
+                else endingDebit = netAmount;
             }
 
             const endingRow = document.createElement('tr');
